@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Thái proooo</title>
+        <style>
+            * {
+                padding: 0;
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                background-color: #0f0c0c;
+            }
+
+            #canvas {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script>
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let listPoints = []
+              , hue = 0
+              , mouse = {
+                x: undefined,
+                y: undefined
+            };
+            canvas.addEventListener("mousemove", (event)=>{
+                mouse.x = event.x;
+                mouse.y = event.y;
+            }
+            );
+            class MyClass {
+                constructor() {
+                    this.x = Math.random() * canvas.width + 1;
+                    this.y = Math.random() * canvas.height + 1;
+                    this.r = Math.random() * 2 + 0.1;
+                    this.speedX = Math.random() * 2 - 1;
+                    this.speedY = Math.random() * 2 - 1;
+                    this.cpx = 0;
+                    this.cpy = 0;
+                    this.color = 'hsl(' + hue + ', 100%, 50%)';
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x > this.cpx)
+                        this.cpx = this.x - 50;
+                    else
+                        this.cpx = this.x + 1000;
+                    if (this.y > this.cpy)
+                        this.cpy = this.y - 50;
+                    else
+                        this.cpy = this.y + 1000;
+                    if (this.r < Math.random() * 5)
+                        this.r += 0.03;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = 0.8;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            function createPoints() {
+                for (let i = 0; i < listPoints.length; i++) {
+                    listPoints[i].update();
+                    listPoints[i].draw();
+                    const distance = Math.sqrt(Math.pow(mouse.x - listPoints[i].x, 2) + Math.pow(mouse.y - listPoints[i].y, 2));
+                    if (distance < 190) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = listPoints[i].color;
+                        ctx.lineWidth = listPoints[i].r / 10;
+                        ctx.moveTo(mouse.x, mouse.y);
+                        ctx.quadraticCurveTo(listPoints[i].cpx, listPoints[i].cpy, listPoints[i].x, listPoints[i].y);
+                        ctx.stroke();
+                    }
+                    if (listPoints[i].x > canvas.width - 10 || listPoints[i].y > canvas.height - 10 || listPoints[i].x < 10 || listPoints[i].y < 10 || listPoints[i].r >= 4) {
+                        listPoints.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+            let sp = 0;
+            function handleDraw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                createPoints();
+                if (sp > 2) {
+                    listPoints.push(new MyClass());
+                    sp = 0;
+                }
+                sp++;
+                hue++;
+                requestAnimationFrame(handleDraw);
+            }
+            handleDraw();
+        </script>
+    </body>
+</html>
